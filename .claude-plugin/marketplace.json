@@ -1515,7 +1515,8 @@
       "category": "database",
       "source": {
         "source": "url",
-        "url": "https://github.com/qdrant/skills.git"
+        "url": "https://github.com/qdrant/skills.git",
+        "sha": "9f935f8bbb13ec62a07f0da0d42e89722029fb25"
       },
       "homepage": "https://skills.qdrant.tech"
     },
