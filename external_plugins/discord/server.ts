@@ -280,8 +280,19 @@ async function gate(msg: Message): Promise<GateResult> {
   const channelId = msg.channel.isThread()
     ? msg.channel.parentId ?? msg.channelId
     : msg.channelId
-  const policy = access.groups[channelId]
-  if (!policy) return { action: 'drop' }
+  // PATCH (clawd-a fork): auto-opt-in any channel on first @-mention from a
+  // DM-allowlisted sender. The operator inviting the bot to a channel +
+  // @-mentioning it is sufficient consent — no manual `/discord:access` step.
+  let policy = access.groups[channelId]
+  if (!policy) {
+    if (access.allowFrom.includes(senderId) && (await isMentioned(msg, access.mentionPatterns))) {
+      policy = { requireMention: true, allowFrom: [senderId] }
+      access.groups[channelId] = policy
+      saveAccess(access)
+    } else {
+      return { action: 'drop' }
+    }
+  }
   const groupAllowFrom = policy.allowFrom ?? []
   const requireMention = policy.requireMention ?? true
   if (groupAllowFrom.length > 0 && !groupAllowFrom.includes(senderId)) {
